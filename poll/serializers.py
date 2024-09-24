@@ -1,25 +1,32 @@
 from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
 
 from account.models import Account
+from account.serializers import AccountSerializer, AccountProfileSerializer, AccountDetialSeriaizer
 from poll.models import Poll, Choice, Vote
 
 
 class PollSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Poll
-        fields = ('id', 'question', 'author', 'published')
+        class Meta:
+            model = Poll
+            fields = ('id', 'question', 'published', 'author_id')
 
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = ('id', 'answer', 'poll')
+        fields = ('id', 'answer', 'poll' )
 
 
-class VoteSerializer(serializers.ModelSerializer):
+
+class VoteSerializer(ModelSerializer):
     class Meta:
         model = Vote
-        fields = ('id', 'poll', 'choice', 'vote_by')
-
+        fields = ("id", "choice", "voted_by", "voted_at")
+        extra_kwargs = {
+            "choice": {"read_only": True},
+            "voted_at": {"read_only": True},
+            "voted_by": {"read_only": True},
+        }
 
 class PollPatchSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
