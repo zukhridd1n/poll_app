@@ -9,10 +9,14 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+
 import os
+from datetime import timedelta
 from pathlib import Path
 
-from  dotenv import load_dotenv
+from dotenv import load_dotenv
+from tutorial.settings import BASE_DIR
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,7 +33,7 @@ SECRET_KEY = "django-insecure-!-g4&e_yfr*3^#l0z*svfzn%umc8l6rj(jq_0iqhm75hl4)(rw
 DEBUG = True
 
 ALLOWED_HOSTS = []
-AUTH_USER_MODEL = 'account.Account'
+AUTH_USER_MODEL = "account.Account"
 
 # Application definition
 
@@ -42,7 +46,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "poll",
     "account",
-    'rest_framework',
+    "rest_framework",
+    "rest_framework.authtoken",
+    "django_filters",
+    "djoser",
     "drf_yasg",
 ]
 
@@ -73,6 +80,24 @@ TEMPLATES = [
         },
     },
 ]
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "config.throttle.RoleBasedThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {"anon": "2/min", "user": "5/min"},
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "config.paginations.ShortedPagination",
+}
+
 
 WSGI_APPLICATION = "config.wsgi.application"
 
@@ -123,11 +148,27 @@ USE_I18N = True
 USE_TZ = True
 
 
+SWAGGER_SETTINGS = {
+    "DEFAULT_AUTO_SCHEMA_CLASS": "config.swagger.CustomAutoSchema",
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+        }
+    },
+}
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
-
+STATIC_ROOT = BASE_DIR / "static"
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+}
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
