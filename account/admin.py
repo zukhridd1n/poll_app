@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import TabularInline
 
-from account.models import Account, AccountProfile, Interest
+from account.models import Account, Interest, AccountProfile
 
 
 class AccountInfoTabularInline(TabularInline):

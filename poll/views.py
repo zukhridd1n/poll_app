@@ -5,22 +5,20 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
-from rest_framework.authentication import (BasicAuthentication,
-                                           TokenAuthentication)
+from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.decorators import action
-from rest_framework.pagination import (LimitOffsetPagination,
-                                       PageNumberPagination)
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ViewSet
+from rest_framework.viewsets import ViewSet, ModelViewSet
 from yaml import serialize
 
 from config.search import PollSearchFilter
 from poll.filters import AnswerFilterBackend
-from poll.models import Choice, Poll, Vote
+from poll.models import Poll, Choice, Vote
 from poll.order import ChoiceOrderingFilter
-from poll.serializers import ChoiceSerializer, PollSerializer, VoteSerializer
+from poll.serializers import PollSerializer, ChoiceSerializer, VoteSerializer
 
 #
 # class PollsView(APIView):
@@ -84,12 +82,14 @@ from poll.serializers import ChoiceSerializer, PollSerializer, VoteSerializer
 
 
 class PollViewSet(ModelViewSet):
-    queryset = Poll.objects.all().order_by("id")
+    queryset = Poll.objects.all().order_by('id')
     serializer_class = PollSerializer
     # filter_backends = [PollSearchFilter]
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ("question", "published")
+    filterset_fields = ('question', 'published')
     my_tags = ("poll",)
+
+
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -101,28 +101,24 @@ class ChoiceViewSet(ModelViewSet):
     serializer_class = ChoiceSerializer
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, ChoiceOrderingFilter)
-    search_fields = ("poll ",)
+    search_fields = ('poll ',)
     #
     # filter_backends = (DjangoFilterBackend, AnswerFilterBackend)
     # filterset_fields = ('answer',)
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        answer = self.request.query_params.get("answer", None)
+        answer = self.request.query_params.get('answer', None)
 
         if answer:
-            queryset = queryset.filter(answer__iendswith=f"{answer}")
+            queryset = queryset.filter(answer__iendswith=f'{answer}')
 
         return queryset
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter(
-                "answer",
-                openapi.IN_QUERY,
-                description="Answer end word with filter",
-                type=openapi.TYPE_STRING,
-            ),
+            openapi.Parameter('answer', openapi.IN_QUERY, description='Answer end word with filter',
+                              type=openapi.TYPE_STRING),
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -147,15 +143,16 @@ class ChoiceViewSet(ModelViewSet):
 class VoteView(ViewSet):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
-    my_tags = ("vote",)
+    my_tags = ('vote',)
 
-    @action(methods=["POST"], detail=False, url_path="top-votes")
+    @action(methods=['POST'], detail=False, url_path='top-votes')
     def top_votes(self, *args, **kwargs):
-        queryset = Poll.objects.annotate(vote_count=Count("votes")).order_by(
-            "-vote_count"
-        )[3:]
+        queryset = (
+            Poll.objects.annotate(vote_count=Count('votes')).order_by('-vote_count')[3:]
+        )
         serializer = PollSerializer(queryset, many=True)
         return Response(data=serializer.data)
+
 
     def list(self, request):
         serializer = VoteSerializer(self.queryset, many=True)

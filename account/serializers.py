@@ -1,10 +1,10 @@
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission, Group
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import ImageField
 from rest_framework.serializers import ModelSerializer
 
-from account.models import Account, AccountProfile, Interest
+from account.models import Account, Interest, AccountProfile
 
 
 class AccountSerializer(ModelSerializer):
@@ -26,20 +26,11 @@ class AccountSerializer(ModelSerializer):
 
     class Meta:
         model = Account
-        fields = (
-            "id",
-            "username",
-            "email",
-            "password",
-            "password2",
-            "first_name",
-            "last_name",
-            "phone",
-        )
+        fields = ("id", "username", "email", "password", "password2", "first_name", "last_name", "phone")
         extra_kwargs = {
-            "email": {"required": True, "allow_null": False},
-            "first_name": {"required": True, "allow_null": False},
-            "last_name": {"required": True, "allow_null": False},
+            'email': {'required': True, 'allow_null': False},
+            'first_name': {'required': True, 'allow_null': False},
+            'last_name': {'required': True, 'allow_null': False}
         }
 
 
@@ -51,21 +42,18 @@ class AccountProfileSerializer(ModelSerializer):
     # interests = InterestSerializer(many=True)
     class Meta:
         model = AccountProfile
-        fields = ("city", "passport_number", "passport_letter", "interests")
+        fields = ('city', 'passport_number', 'passport_letter', 'interests')
         extra_kwargs = {
-            "interests": {"required": False, "allow_null": True, "allow_empty": True},
-            "city": {"required": False, "allow_null": True},
-            "passport_number": {"required": False, "allow_null": True},
-            "passport_letter": {"required": False, "allow_null": True},
+            'interests': {'required': False, 'allow_null': True, 'allow_empty': True},
+            'city': {'required': False, 'allow_null': True},
+            'passport_number': {'required': False, 'allow_null': True},
+            'passport_letter': {'required': False, 'allow_null': True},
         }
 
     def to_representation(self, instance: AccountProfile):
         representation = super().to_representation(instance)
-        representation["interests"] = InterestSerializer(
-            instance.interests, many=True
-        ).data
+        representation["interests"] = InterestSerializer(instance.interests, many=True).data
         return representation
-
 
 class AccountDetialSeriaizer(ModelSerializer):
     profile = AccountProfileSerializer()
@@ -73,23 +61,12 @@ class AccountDetialSeriaizer(ModelSerializer):
 
     class Meta:
         model = Account
-        fields = (
-            "id",
-            "username",
-            "email",
-            "first_name",
-            "last_name",
-            "phone",
-            "profile",
-            "avatar",
-            "music",
-            "rating",
-        )
+        fields = ("id", "username", "email", "first_name", "last_name", "phone", "profile", "avatar", "music", "rating")
         extra_kwargs = {
-            "email": {"required": False, "allow_null": True},
-            "first_name": {"required": False, "allow_null": True},
-            "last_name": {"required": False, "allow_null": True},
-            "profile": {"required": False, "allow_null": True},
+            'email': {'required': False, 'allow_null': True},
+            'first_name': {'required': False, 'allow_null': True},
+            'last_name': {'required': False, 'allow_null': True},
+            'profile': {'required': False, 'allow_null': True}
         }
 
     # def update(self, instance, validated_data):
@@ -114,19 +91,16 @@ class InterestSerializer(ModelSerializer):
         model = Interest
         fields = ("id", "name", "slug")
         extra_kwargs = {
-            "slug": {"required": False, "allow_null": True, "read_only": True},
+            'slug': {'required': False, 'allow_null': True, "read_only": True},
         }
-
 
 class PermissionSerializer(ModelSerializer):
     class Meta:
         model = Permission
-        fields = "__all__"
-
+        fields = '__all__'
 
 class GroupSerializer(ModelSerializer):
     permissions = PermissionSerializer(many=True, read_only=True)
-
     class Meta:
         model = Group
-        fields = ("id", "name", "permissions")
+        fields = ('id', 'name', 'permissions')

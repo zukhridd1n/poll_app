@@ -5,7 +5,7 @@ class RoleBasedThrottle(UserRateThrottle):
     def custom_rate(self, request):
         # Check if the user is authenticated and an admin, and return the custom rate
         if request.user.is_authenticated and request.user.role == "admin":
-            return "5/min"
+            return '5/min'
         # Use the default rate if not an admin
         return super().get_rate()
 
